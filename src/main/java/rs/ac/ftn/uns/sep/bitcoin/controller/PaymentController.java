@@ -2,8 +2,10 @@ package rs.ac.ftn.uns.sep.bitcoin.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.function.ServerRequest;
 import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
 import rs.ac.ftn.uns.sep.bitcoin.service.PaymentService;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.*;
@@ -38,9 +40,7 @@ public class PaymentController {
 
         LOGGER.info("Payment URL: " + paymentUrl);
 
-        LOGGER.info("Persisting payment information...");
-        Payment persistedPayment = paymentService.persist(response.getBody(), preparedPaymentDto);
-        LOGGER.info("Persisted payment: " + persistedPayment.toString());
+        paymentService.persist(response.getBody(), preparedPaymentDto);
 
         paymentUrlDto.setPaymentUrl(paymentUrl);
 
@@ -48,22 +48,20 @@ public class PaymentController {
     }
 
     @GetMapping("/paymentSuccessful/{paymentId}")
-    public RedirectUrlDto getPaymentSuccess(@PathVariable Long paymentId) {
+    public ResponseEntity<?> getPaymentSuccess(@PathVariable Long paymentId) {
         LOGGER.info("Handling successful payment");
         return getRedirectUrlDto(paymentId);
     }
 
     @GetMapping("/paymentCanceled/{paymentId}")
-    public RedirectUrlDto getPaymentCanceled(@PathVariable Long paymentId) {
+    public ResponseEntity<?> getPaymentCanceled(@PathVariable Long paymentId) {
         LOGGER.info("Handling invalid payment");
         return getRedirectUrlDto(paymentId);
     }
 
-    private RedirectUrlDto getRedirectUrlDto(@PathVariable Long paymentId) {
-        RedirectUrlDto redirectUrlDto = new RedirectUrlDto();
+    private ResponseEntity<?> getRedirectUrlDto(@PathVariable Long paymentId) {
 
         Payment payment = paymentService.getOne(paymentId);
-        redirectUrlDto.setRedirectUrl(payment.getRedirectUrl());
 
         LOGGER.info("Getting payment information..");
         ResponseEntity<ApiResponseDto> response = getOrder(payment);
@@ -78,7 +76,10 @@ public class PaymentController {
         Payment persistedPayment = paymentService.save(payment);
         LOGGER.info("Payment persisted: " + persistedPayment.toString());
 
-        LOGGER.info("Redirecting to: " + redirectUrlDto.getRedirectUrl());
-        return redirectUrlDto;
+        String redirectUrl = payment.getRedirectUrl();
+
+        LOGGER.info("Redirecting to: " + redirectUrl);
+
+        return ResponseEntity.status(HttpStatus.FOUND).header("Location", redirectUrl).build();
     }
 }
