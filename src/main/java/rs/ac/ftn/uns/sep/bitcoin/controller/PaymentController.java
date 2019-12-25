@@ -26,26 +26,36 @@ public class PaymentController {
 
     @PostMapping
     public PaymentUrlDto postPreparePayment(KpRequest kpRequest) {
+        LOGGER.info("Handling KP request.");
+
         PaymentUrlDto paymentUrlDto = new PaymentUrlDto();
 
         PreparedPaymentDto preparedPaymentDto = paymentService.preparePayment(kpRequest);
 
         ResponseEntity<ApiResponseDto> response = postOrder(preparedPaymentDto);
 
-        paymentService.persist(response.getBody(), preparedPaymentDto);
+        String paymentUrl = Objects.requireNonNull(response.getBody()).getPaymentUrl();
 
-        paymentUrlDto.setPaymentUrl(Objects.requireNonNull(response.getBody()).getPaymentUrl());
+        LOGGER.info("Payment URL: " + paymentUrl);
+
+        LOGGER.info("Persisting payment information...");
+        Payment persistedPayment = paymentService.persist(response.getBody(), preparedPaymentDto);
+        LOGGER.info("Persisted payment: " + persistedPayment.toString());
+
+        paymentUrlDto.setPaymentUrl(paymentUrl);
 
         return paymentUrlDto;
     }
 
     @GetMapping("/paymentSuccessful/{paymentId}")
     public RedirectUrlDto getPaymentSuccess(@PathVariable Long paymentId) {
+        LOGGER.info("Handling successful payment");
         return getRedirectUrlDto(paymentId);
     }
 
     @GetMapping("/paymentCanceled/{paymentId}")
     public RedirectUrlDto getPaymentCanceled(@PathVariable Long paymentId) {
+        LOGGER.info("Handling invalid payment");
         return getRedirectUrlDto(paymentId);
     }
 
@@ -55,12 +65,20 @@ public class PaymentController {
         Payment payment = paymentService.getOne(paymentId);
         redirectUrlDto.setRedirectUrl(payment.getRedirectUrl());
 
+        LOGGER.info("Getting payment information..");
         ResponseEntity<ApiResponseDto> response = getOrder(payment);
+        LOGGER.info("Basic payment info: " + Objects.requireNonNull(response.getBody()).toString());
 
-        payment.setStatus(Objects.requireNonNull(response.getBody()).getStatus());
+        String status = response.getBody().getStatus();
 
-        paymentService.save(payment);
+        LOGGER.info("Changing payment status into: " + status);
+        payment.setStatus(status);
 
+        LOGGER.info("Persisting payment");
+        Payment persistedPayment = paymentService.save(payment);
+        LOGGER.info("Payment persisted: " + persistedPayment.toString());
+
+        LOGGER.info("Redirecting to: " + redirectUrlDto.getRedirectUrl());
         return redirectUrlDto;
     }
 }

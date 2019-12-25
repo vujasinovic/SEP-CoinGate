@@ -1,5 +1,7 @@
 package rs.ac.ftn.uns.sep.bitcoin.service.implementation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
 import rs.ac.ftn.uns.sep.bitcoin.model.Seller;
@@ -12,6 +14,8 @@ import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
+    private final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceImpl.class);
+
     private static final String TEST_ORDER = "Test order";
     private static final String BITCOIN = "BTC";
     private static final String SUCCESS_URL = "http://localhost:8080/paymentSuccessful/";
@@ -28,6 +32,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PreparedPaymentDto preparePayment(KpRequest kpRequest) {
+        LOGGER.info("Preparing payment...");
+
         PreparedPaymentDto preparedPaymentDto = new PreparedPaymentDto();
 
         Seller seller = sellerService.findByEmail(kpRequest.getEmail());
@@ -49,6 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         preparedPaymentDto.setRedirectUrl(kpRequest.getRedirectUrl());
 
+        LOGGER.info("Prepared payment info: " + preparedPaymentDto.toString());
         return preparedPaymentDto;
     }
 
@@ -63,6 +70,8 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setAmount(preparedPaymentDto.getAmount());
         payment.setRedirectUrl(preparedPaymentDto.getRedirectUrl());
         payment.setStatus(apiResponseDto.getStatus());
+
+        LOGGER.info("Persisting payment: " + payment.toString());
 
         return paymentRepository.save(payment);
     }

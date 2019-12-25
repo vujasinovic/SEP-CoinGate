@@ -12,9 +12,10 @@ import rs.ac.ftn.uns.sep.bitcoin.utils.dto.ApiResponseDto;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
 
 public final class PaymentUtils {
+    private static final String API_ORDERS = "https://api-sandbox.coingate.com/v2/orders";
+
     private static final String AUTHORIZATION = "Authorization";
     private static final String TOKEN = "Token ";
-    private static final String API_ORDERS = "https://api-sandbox.coingate.com/v2/orders";
     private static final String PRICE_AMOUNT = "price_amount";
     private static final String PRICE_CURRENCY = "price_currency";
     private static final String RECEIVE_CURRENCY = "receive_currency";
