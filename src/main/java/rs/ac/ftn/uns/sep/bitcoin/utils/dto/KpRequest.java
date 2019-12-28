@@ -10,9 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class KpRequest {
-    private String email;
-
+    private String merchantName;
     private BigDecimal amount;
-
     private String redirectUrl;
 }

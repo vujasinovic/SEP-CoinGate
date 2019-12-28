@@ -1,34 +1,37 @@
 package rs.ac.ftn.uns.sep.bitcoin.service.implementation;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
 import rs.ac.ftn.uns.sep.bitcoin.model.Seller;
+import rs.ac.ftn.uns.sep.bitcoin.properties.BitcoinProperties;
 import rs.ac.ftn.uns.sep.bitcoin.repository.PaymentRepository;
 import rs.ac.ftn.uns.sep.bitcoin.service.PaymentService;
 import rs.ac.ftn.uns.sep.bitcoin.service.SellerService;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.ApiResponseDto;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.KpRequest;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
+import rs.ac.uns.ftn.sep.commons.helper.UrlHelper;
+
+import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
     private static final String TEST_ORDER = "Test order";
     private static final String BITCOIN = "BTC";
-    private static final String SUCCESS_URL = "http://localhost:8080/paymentSuccessful/";
-    private static final String CANCEL_URL = "http://localhost:8080/paymentCanceled/";
+    private static final String URL_PATH_SUCCESS = "paymentSuccessful";
+    private static final String URL_PATH_CANCEL = "paymentCanceled";
+
+    private static final String STATUS_PAID = "paid";
 
     private final PaymentRepository paymentRepository;
-
     private final SellerService sellerService;
-
-    public PaymentServiceImpl(PaymentRepository paymentRepository, SellerService sellerService) {
-        this.paymentRepository = paymentRepository;
-        this.sellerService = sellerService;
-    }
+    private final BitcoinProperties properties;
 
     @Override
     public PreparedPaymentDto preparePayment(KpRequest kpRequest) {
@@ -36,7 +39,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         PreparedPaymentDto preparedPaymentDto = new PreparedPaymentDto();
 
-        Seller seller = sellerService.findByEmail(kpRequest.getEmail());
+        Seller seller = sellerService.findByEmail(kpRequest.getMerchantName());
 
         Payment savedPayment = paymentRepository.save(new Payment());
 
@@ -49,9 +52,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         preparedPaymentDto.setTitle(TEST_ORDER);
 
-        preparedPaymentDto.setSuccessUrl(SUCCESS_URL + savedPayment.getId());
+        preparedPaymentDto.setSuccessUrl(getSuccessUrl(savedPayment.getId()));
 
-        preparedPaymentDto.setCancelUrl(CANCEL_URL + savedPayment.getId());
+        preparedPaymentDto.setCancelUrl(getCancelUrl(savedPayment.getId()));
 
         preparedPaymentDto.setRedirectUrl(kpRequest.getRedirectUrl());
 
@@ -84,5 +87,27 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment save(Payment payment) {
         return paymentRepository.save(payment);
+    }
+
+    @Override
+    public boolean getStatus(Long id) {
+        Payment payment = paymentRepository.getOne(id);
+        return Objects.equals(payment.getStatus(), STATUS_PAID);
+    }
+
+    private String getSuccessUrl(Long id) {
+        String baseUrl = properties.getUrl();
+
+        String successUrl = UrlHelper.addPathVariables(baseUrl, URL_PATH_SUCCESS, id.toString());
+
+        return successUrl;
+    }
+
+    private String getCancelUrl(Long id) {
+        String baseUrl = properties.getUrl();
+
+        String cancelUrl = UrlHelper.addPathVariables(baseUrl, URL_PATH_CANCEL, id.toString());
+
+        return cancelUrl;
     }
 }

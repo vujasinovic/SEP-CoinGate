@@ -13,4 +13,6 @@ public interface PaymentService {
     Payment getOne(Long id);
 
     Payment save(Payment payment);
+
+    boolean getStatus(Long id);
 }

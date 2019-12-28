@@ -9,6 +9,9 @@ import org.springframework.web.servlet.function.ServerRequest;
 import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
 import rs.ac.ftn.uns.sep.bitcoin.service.PaymentService;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.*;
+import rs.ac.uns.ftn.sep.commons.dto.PaymentStatus;
+import rs.ac.uns.ftn.sep.commons.dto.PaymentStatusRequest;
+import rs.ac.uns.ftn.sep.commons.dto.PaymentStatusResponse;
 
 import java.util.Objects;
 
@@ -16,7 +19,7 @@ import static rs.ac.ftn.uns.sep.bitcoin.utils.PaymentUtils.getOrder;
 import static rs.ac.ftn.uns.sep.bitcoin.utils.PaymentUtils.postOrder;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping({"/", "/api/payment"})
 public class PaymentController {
     private final Logger LOGGER = LoggerFactory.getLogger(PaymentController.class);
 
@@ -27,7 +30,7 @@ public class PaymentController {
     }
 
     @PostMapping
-    public PaymentUrlDto postPreparePayment(KpRequest kpRequest) {
+    public PaymentUrlDto postPreparePayment(@RequestBody KpRequest kpRequest) {
         LOGGER.info("Handling KP request.");
 
         PaymentUrlDto paymentUrlDto = new PaymentUrlDto();
@@ -42,10 +45,22 @@ public class PaymentController {
 
         paymentService.persist(response.getBody(), preparedPaymentDto);
 
-        paymentUrlDto.setPaymentUrl(paymentUrl);
+        paymentUrlDto.setRedirect(paymentUrl);
+        paymentUrlDto.setPaymentId(preparedPaymentDto.getPaymentId());
 
         return paymentUrlDto;
     }
+
+    @GetMapping
+    public PaymentStatusResponse getPaymentStatus(PaymentStatusRequest request) {
+        Long paymentId = request.getPaymentId();
+        boolean success = paymentService.getStatus(paymentId);
+        PaymentStatus status = success ? PaymentStatus.SUCCESS : PaymentStatus.FAIL;
+
+        PaymentStatusResponse response = new PaymentStatusResponse(paymentId, status);
+        return response;
+    }
+
 
     @GetMapping("/paymentSuccessful/{paymentId}")
     public ResponseEntity<?> getPaymentSuccess(@PathVariable Long paymentId) {

@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class PaymentUrlDto {
-    private String paymentUrl;
+    private Long paymentId;
+    private String redirect;
 }
