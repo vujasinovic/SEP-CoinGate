@@ -8,7 +8,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
+import rs.ac.ftn.uns.sep.bitcoin.model.Seller;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.ApiResponseDto;
+import rs.ac.ftn.uns.sep.bitcoin.utils.dto.KpRequest;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
 
 public final class PaymentUtils {

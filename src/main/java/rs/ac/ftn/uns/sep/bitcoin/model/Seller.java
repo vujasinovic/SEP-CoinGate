@@ -10,7 +10,6 @@ import javax.persistence.Id;
 @Entity
 @Data
 public class Seller {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -18,5 +17,4 @@ public class Seller {
     private String email;
 
     private String apiToken;
-
 }

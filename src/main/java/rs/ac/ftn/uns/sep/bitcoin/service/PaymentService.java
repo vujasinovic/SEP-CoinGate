@@ -1,16 +1,10 @@
 package rs.ac.ftn.uns.sep.bitcoin.service;
 
-import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
-import rs.ac.ftn.uns.sep.bitcoin.utils.dto.ApiResponseDto;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.KpRequest;
-import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
+import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PaymentUrlDto;
 
 public interface PaymentService {
-    PreparedPaymentDto preparePayment(KpRequest kpRequest);
+    PaymentUrlDto sendOrder(KpRequest kpRequest);
 
-    Payment persist(ApiResponseDto apiResponseDto, PreparedPaymentDto preparedPaymentDto);
-
-    Payment getOne(Long id);
-
-    Payment save(Payment payment);
+    String getRedirectUrl(Long paymentId);
 }

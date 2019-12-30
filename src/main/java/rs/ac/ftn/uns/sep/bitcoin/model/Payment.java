@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @Entity
 @Data
 public class Payment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -25,5 +24,4 @@ public class Payment {
     private String redirectUrl;
 
     private String status;
-
 }
