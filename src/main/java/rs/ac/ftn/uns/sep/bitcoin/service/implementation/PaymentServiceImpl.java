@@ -14,19 +14,19 @@ import rs.ac.ftn.uns.sep.bitcoin.utils.dto.KpRequest;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PaymentUrlDto;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
 
+import java.util.List;
 import java.util.Objects;
 
 import static rs.ac.ftn.uns.sep.bitcoin.utils.PaymentUtils.getOrder;
 import static rs.ac.ftn.uns.sep.bitcoin.utils.PaymentUtils.postOrder;
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.Info.CURRENCY;
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.Info.TITLE;
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.Url.CANCEL_URL;
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.Url.SUCCESS_URL;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
     private final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceImpl.class);
-
-    private static final String TITLE = "Test order";
-    private static final String CURRENCY = "BTC";
-    private static final String SUCCESS_URL = "http://localhost:8080/paymentSuccessful/";
-    private static final String CANCEL_URL = "http://localhost:8080/paymentCanceled/";
 
     private final PaymentRepository paymentRepository;
 
@@ -53,23 +53,34 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public String getRedirectUrl(Long paymentId) {
+    public String findRedirectUrl(Long paymentId) {
         Payment payment = paymentRepository.getOne(paymentId);
 
-        LOGGER.info("Getting payment information..");
         ResponseEntity<ApiResponseDto> response = getOrder(payment);
+        String status = Objects.requireNonNull(response.getBody()).getStatus();
+
         LOGGER.info("Basic payment info: " + Objects.requireNonNull(response.getBody()).toString());
 
-        String status = response.getBody().getStatus();
-
-        LOGGER.info("Changing payment status into: " + status);
-        payment.setStatus(status);
-
-        LOGGER.info("Persisting payment");
-        Payment persistedPayment = paymentRepository.save(payment);
-        LOGGER.info("Payment persisted: " + persistedPayment.toString());
+        if (!payment.getStatus().equalsIgnoreCase(status)) {
+            LOGGER.info("Changing payment status into: " + status);
+            changeStatus(payment, status);
+        }
 
         return payment.getRedirectUrl();
+    }
+
+    @Override
+    public void checkStatus() {
+        List<Payment> notCompletedPayments = paymentRepository.findAllByStatusNotPaid();
+
+        for (Payment payment : notCompletedPayments) {
+            String status = Objects.requireNonNull(getOrder(payment).getBody()).getStatus();
+
+            if (!payment.getStatus().equalsIgnoreCase(status)) {
+                LOGGER.info(String.format("Status of payment with order id %d set to: %s", payment.getOrderId(), status));
+                changeStatus(payment, status);
+            }
+        }
     }
 
     private void persist(ApiResponseDto apiResponseDto, PreparedPaymentDto preparedPaymentDto) {
@@ -103,5 +114,10 @@ public class PaymentServiceImpl implements PaymentService {
 
         LOGGER.info("Prepared payment info: " + preparedPaymentDto.toString());
         return preparedPaymentDto;
+    }
+
+    private void changeStatus(Payment payment, String status) {
+        payment.setStatus(status);
+        paymentRepository.save(payment);
     }
 }

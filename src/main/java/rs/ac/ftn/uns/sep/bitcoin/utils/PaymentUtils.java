@@ -8,24 +8,16 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
-import rs.ac.ftn.uns.sep.bitcoin.model.Seller;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.ApiResponseDto;
-import rs.ac.ftn.uns.sep.bitcoin.utils.dto.KpRequest;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
 
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.Api.API_ORDERS;
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.BodyParam.*;
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.Header.AUTHORIZATION;
+import static rs.ac.ftn.uns.sep.bitcoin.utils.globals.PaymentConstants.Header.TOKEN;
+
 public final class PaymentUtils {
-    private static final String API_ORDERS = "https://api-sandbox.coingate.com/v2/orders";
-
-    private static final String AUTHORIZATION = "Authorization";
-    private static final String TOKEN = "Token ";
-    private static final String PRICE_AMOUNT = "price_amount";
-    private static final String PRICE_CURRENCY = "price_currency";
-    private static final String RECEIVE_CURRENCY = "receive_currency";
-    private static final String TITLE = "title";
-    private static final String SUCCESS_URL = "success_url";
-    private static final String CANCEL_URL = "cancel_url";
     private static final String PARAMS = "parameters";
-
 
     private PaymentUtils() {
 
