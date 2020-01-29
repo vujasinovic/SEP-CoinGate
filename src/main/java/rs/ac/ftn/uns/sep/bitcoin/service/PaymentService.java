@@ -1,18 +1,30 @@
 package rs.ac.ftn.uns.sep.bitcoin.service;
 
-import rs.ac.ftn.uns.sep.bitcoin.model.Payment;
-import rs.ac.ftn.uns.sep.bitcoin.utils.dto.ApiResponseDto;
 import rs.ac.ftn.uns.sep.bitcoin.utils.dto.KpRequest;
-import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PreparedPaymentDto;
+import rs.ac.ftn.uns.sep.bitcoin.utils.dto.PaymentUrlDto;
 
 public interface PaymentService {
-    PreparedPaymentDto preparePayment(KpRequest kpRequest);
+    /**
+     * Method that receives request from KP and sends POST request to CoinGate API.
+     *
+     * @param kpRequest - contains information about seller email, amount that is being transferred and
+     *                  redirect url
+     * @return url where user can finish payment.
+     */
+    PaymentUrlDto sendOrder(KpRequest kpRequest);
 
-    Payment persist(ApiResponseDto apiResponseDto, PreparedPaymentDto preparedPaymentDto);
+    /**
+     * Finds Payment with provided paymentId and checks if payment status has changed.
+     * If status is changed, new status is set and persisted.
+     *
+     * @param paymentId
+     * @return payment redirect url
+     */
+    String findRedirectUrl(Long paymentId);
 
-    Payment getOne(Long id);
-
-    Payment save(Payment payment);
-
-    boolean getStatus(Long id);
+    /**
+     * Method that finds unfinished payments and communicate with CoinGate API.
+     * After API response it changes payment status if needed.
+     */
+    void checkStatus();
 }

@@ -2,11 +2,10 @@ package rs.ac.ftn.uns.sep.bitcoin;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import rs.ac.ftn.uns.sep.bitcoin.properties.BitcoinProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableConfigurationProperties(BitcoinProperties.class)
+@EnableScheduling
 public class BitcoinApplication {
 
     public static void main(String[] args) {
