@@ -10,7 +10,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/credentials")
-@CrossOrigin(origins = {"http://localhost:3000"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://localhost", "https://dev.local"})
 @RequiredArgsConstructor
 public class CredentialsApiController {
     private final SellerService sellerService;

@@ -1,21 +1,20 @@
 package rs.ac.uns.ftn.sep.bitcoin.service.implementation;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import rs.ac.uns.ftn.sep.bitcoin.model.Seller;
 import rs.ac.uns.ftn.sep.bitcoin.repository.SellerRepository;
 import rs.ac.uns.ftn.sep.bitcoin.service.SellerService;
-
-import java.util.Objects;
+import rs.ac.uns.ftn.sep.commons.client.SellerClient;
+import rs.ac.uns.ftn.sep.commons.dto.seller.CreatePaymentMethodDto;
 
 import static java.util.Objects.nonNull;
 
 @Service
+@RequiredArgsConstructor
 public class SellerServiceImpl implements SellerService {
     private final SellerRepository sellerRepository;
-
-    public SellerServiceImpl(SellerRepository sellerRepository) {
-        this.sellerRepository = sellerRepository;
-    }
+    private final SellerClient sellerClient;
 
     @Override
     public Seller findByEmail(String email) {
@@ -36,6 +35,12 @@ public class SellerServiceImpl implements SellerService {
         } else {
             seller = request;
         }
+
+        CreatePaymentMethodDto createPaymentMethodDto = CreatePaymentMethodDto.builder()
+                .email(seller.getEmail())
+                .externalId(seller.getId())
+                .build();
+        sellerClient.createPaymentMethod(createPaymentMethodDto);
 
         return sellerRepository.save(seller);
     }
